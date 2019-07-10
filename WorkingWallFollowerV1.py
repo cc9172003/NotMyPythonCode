@@ -19,6 +19,8 @@ class WallFollower:
         # subscribers
         self.data = None    
         self.angle = 0
+        self.diffAngle = 1
+        self.constAngle = 1 
         self.cmd = AckermannDriveStamped()
         self.laser_sub = rospy.Subscriber(self.SCAN_TOPIC, LaserScan, self.scan, queue_size=1)
         self.drive_pub = rospy.Publisher(self.DRIVE_TOPIC, AckermannDriveStamped, queue_size=1)
@@ -40,19 +42,23 @@ class WallFollower:
 
     def find_wall(self):
     # if lidar data has not been received, do nothing
-        e1 = self.data.ranges[99] - self.DESIRED_DISTANCE
-	e2 = self.data.ranges[75] - self.DESIRED_DISTANCE
-	if e1 > 0 and e2 > 0:
-		tempAngle = 1
-	elif e1 > 0 and e2 < 0:
-		tempAngle = -1
-	elif e1 < 0 and e2 > 0:
-		tempAngle = 1
-	elif e1 < 0 and e2 < 0:
-		tempAngle = -1
-	if self.data.ranges[50] < 1.41 * self.DESIRED_DISTANCE:
-		tempAngle = -1
-	return tempAngle
+        e1 = self.data.ranges[self.data.ranges.len()-1] - self.DESIRED_DISTANCE
+        e2 = self.data.ranges[self.data.ranges.len()/4*3-1] - self.DESIRED_DISTANCE
+        if e1 > 0 and e2 > 0:
+            self.diffAngle = self.constAngle
+            tempAngle = self.diffAngle
+        elif e1 > 0 and e2 < 0:
+            self.diffAngle = -self.diffAngle/2
+            tempAngle = -self.diffAngle
+        elif e1 < 0 and e2 > 0:
+            self.diffAngle = self.diffAngle/2
+            tempAngle = self.diffAngle
+        elif e1 < 0 and e2 < 0:
+            self.diffAngle = -self.constAngle/2
+            tempAngle = -self.diffAngle
+        if self.data.ranges[self.data.ranges.len()/2-1] < 1.41 * self.DESIRED_DISTANCE:
+            tempAngle = -self.diffAngle
+        return tempAngle
 
 
 """Lidar data is now stored in self.data, which can be accessed
