@@ -40,8 +40,8 @@ class WallFollower:
 
     def find_wall(self):
     # if lidar data has not been received, do nothing
-        e1 = self.data.ranges[99] - self.DESIRED_DISTANCE
-	e2 = self.data.ranges[75] - self.DESIRED_DISTANCE
+        e1 = self.data.ranges[self.data.ranges.len()] - self.DESIRED_DISTANCE
+	e2 = self.data.ranges[self.data.ranges.len()/4*3] - self.DESIRED_DISTANCE
 	if e1 > 0 and e2 > 0:
 		tempAngle = 1
 	elif e1 > 0 and e2 < 0:
@@ -50,7 +50,7 @@ class WallFollower:
 		tempAngle = 1
 	elif e1 < 0 and e2 < 0:
 		tempAngle = -1
-	if self.data.ranges[50] < 1.41 * self.DESIRED_DISTANCE:
+	if self.data.ranges[self.data.ranges.len()/2] < 1.41 * self.DESIRED_DISTANCE:
 		tempAngle = -1
 	return tempAngle
 
